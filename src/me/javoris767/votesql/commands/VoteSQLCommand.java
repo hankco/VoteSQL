@@ -37,7 +37,6 @@ public class VoteSQLCommand implements CommandExecutor
 			sender.sendMessage(ChatColor.YELLOW + "/votesql check <string> -"
 					+ ChatColor.BLUE
 					+ " Adds a string and 1 vote to the database.");
-			VoteSQLChat.broadcastVoteMessage();
 		}
 		else if (args.length == 1)
 		{
