@@ -22,12 +22,11 @@ public class VoteSQLAPI
 	{
 		_plugin = plugin;
 		VoteSQL.v = plugin.getDescription().getVersion();
-		mySQLSupport = cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-				.getBoolean("VoteSQL.MySQL.Enabled");
-
 		registerUtils();
 		registerListeners();
 		registerCommands();
+		mySQLSupport = cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+				.getBoolean("VoteSQL.MySQL.Enabled");
 		setUpSQL();
 		attemptMetrics();
 		findVotifier();
