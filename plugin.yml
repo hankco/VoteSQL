@@ -1,0 +1,10 @@
+name: VoteSQL
+main: me.javoris767.votesql.VoteSQL
+version: 0.1
+author: javoris767
+authors: [javoris767, mcluke300]
+description: Votifier SQL Logger!
+depends: [Votifier]
+commands:
+    votesql:
+        description: VoteSQL Command
