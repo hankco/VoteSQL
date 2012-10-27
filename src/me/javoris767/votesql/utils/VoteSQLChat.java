@@ -73,7 +73,7 @@ public class VoteSQLChat
 				.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 				.get("VoteSQL.onVote.Message").toString();
 		String newMessage = Functions.colorize(message);
-		Bukkit.getServer().broadcastMessage(prefix + newMessage);
+		Bukkit.getServer().broadcastMessage(prefix + " " + newMessage);
 	}
 
 	public static void dontHavePermission(CommandSender sender)
