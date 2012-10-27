@@ -10,7 +10,7 @@ import org.bukkit.command.CommandSender;
 
 public class VoteSQLChat
 {
-	private VoteSQL _plugin;
+	private static VoteSQL _plugin;
 
 	private static String pluginName;
 	private static String logName;
@@ -65,6 +65,15 @@ public class VoteSQLChat
 	public static void broadcast(String message)
 	{
 		Bukkit.getServer().broadcastMessage(prefix + message);
+	}
+
+	public static void broadcastVoteMessage()
+	{
+		String message = VoteSQLAPI.getConfigs()
+				.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+				.get("VoteSQL.onVote.Message").toString();
+		String newMessage = Functions.colorize(message);
+		Bukkit.getServer().broadcastMessage(prefix + newMessage);
 	}
 
 	public static void dontHavePermission(CommandSender sender)

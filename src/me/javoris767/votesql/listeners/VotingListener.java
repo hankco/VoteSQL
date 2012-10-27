@@ -4,6 +4,7 @@ import me.javoris767.votesql.VoteSQL;
 import me.javoris767.votesql.utils.Functions;
 import me.javoris767.votesql.utils.VoteSQLAPI;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -13,12 +14,12 @@ import com.vexsoftware.votifier.model.VotifierEvent;
 
 public class VotingListener implements Listener
 {
-	@SuppressWarnings("unused")
 	private VoteSQL _plugin;
 
 	public VotingListener(VoteSQL plugin)
 	{
 		_plugin = plugin;
+		Bukkit.getServer().getPluginManager().registerEvents(this, _plugin);
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)

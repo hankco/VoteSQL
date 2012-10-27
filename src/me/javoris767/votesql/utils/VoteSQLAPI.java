@@ -16,14 +16,16 @@ public class VoteSQLAPI
 {
 	private VoteSQL _plugin;
 	public static Boolean mySQLSupport;
+	private static VoteSQLConfigs cm;
 
 	public VoteSQLAPI(VoteSQL plugin)
 	{
 		_plugin = plugin;
 		VoteSQL.v = plugin.getDescription().getVersion();
-		mySQLSupport = _plugin.getConfig().getBoolean("VoteSQL.MySQL.Enabled");
+		mySQLSupport = cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+				.getBoolean("VoteSQL.MySQL.Enabled");
+
 		registerUtils();
-		LoadConfiguration();
 		registerListeners();
 		registerCommands();
 		setUpSQL();
@@ -40,22 +42,20 @@ public class VoteSQLAPI
 			int rs = 0;
 			try
 			{
-				connection = DriverManager
-						.getConnection(
-								"jdbc:MySQL://"
-										+ _plugin.getConfig().getString(
-												"VoteSQL.MySQL.Server")
-										+ "/"
-										+ _plugin.getConfig().getString(
-												"VoteSQL.MySQL.Database"),
-								_plugin.getConfig().getString(
-										"VoteSQL.MySQL.User"),
-								_plugin.getConfig().getString(
-										"VoteSQL.MySQL.Password"));
+				connection = DriverManager.getConnection("jdbc:MySQL://"
+						+ cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+								.getString("VoteSQL.MySQL.Server")
+						+ "/"
+						+ cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+								.getString("VoteSQL.MySQL.Database"),
+						cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+								.getString("VoteSQL.MySQL.User"),
+						cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+								.getString("VoteSQL.MySQL.Password"));
 				st = connection.createStatement();
 				rs = st.executeUpdate("CREATE TABLE IF NOT EXISTS `"
-						+ _plugin.getConfig().getString(
-								"VoteSQL.MySQL.Table_Prefix")
+						+ cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+								.getString("VoteSQL.MySQL.Table_Prefix")
 						+ "`( `id` MEDIUMINT NOT NULL AUTO_INCREMENT, `playername` text, `votes` MEDIUMINT(255), PRIMARY KEY (`id`))");
 			}
 			catch (SQLException e)
@@ -89,43 +89,24 @@ public class VoteSQLAPI
 		_plugin.getCommand("votesql").setExecutor(vC);
 	}
 
-	private void LoadConfiguration()
-	{
-		String path0 = "VoteSQL.MySQL.Enabled";
-		String path1 = "VoteSQL.MySQL.Server";
-		String path2 = "VoteSQL.MySQL.Database";
-		String path3 = "VoteSQL.MySQL.User";
-		String path4 = "VoteSQL.MySQL.Password";
-		String path5 = "VoteSQL.MySQL.Table_Prefix";
-		String path6 = "VoteSQL.onVote.Message";
-
-		_plugin.getConfig().addDefault(path0, false);
-		_plugin.getConfig().addDefault(path1, "Server Address eg.Localhost");
-		_plugin.getConfig().addDefault(path2, "Place Database name here");
-		_plugin.getConfig().addDefault(path3,
-				"Place User of MySQL Database here");
-		_plugin.getConfig().addDefault(path4, "Place User password here");
-		_plugin.getConfig().addDefault(path5, "votesql");
-		_plugin.getConfig().addDefault(path6,
-				"Put the message you want to be broadcasted!");
-		_plugin.getConfig().options().copyDefaults(true);
-		_plugin.getConfig()
-				.options()
-				.header("Thanks for choosing VoteSQL! Simply change the info below.");
-		_plugin.saveConfig();
-
-	}
-
 	private void registerUtils()
 	{
 		new Permissions(_plugin);
 		new Functions(_plugin);
 		new VoteSQLChat(_plugin);
+		cm = new VoteSQLConfigs(_plugin);
 	}
 
 	private void registerListeners()
 	{
 		new VotingListener(_plugin);
+	}
+
+	public static VoteSQLConfigs getConfigs()
+	{
+
+		return cm;
+
 	}
 
 	private void attemptMetrics()
