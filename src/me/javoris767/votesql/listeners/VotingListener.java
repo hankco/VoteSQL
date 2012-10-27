@@ -3,6 +3,7 @@ package me.javoris767.votesql.listeners;
 import me.javoris767.votesql.VoteSQL;
 import me.javoris767.votesql.utils.Functions;
 import me.javoris767.votesql.utils.VoteSQLAPI;
+import me.javoris767.votesql.utils.VoteSQLConfFile;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -27,7 +28,8 @@ public class VotingListener implements Listener
 	{
 		Vote vote = event.getVote();
 		String username = vote.getUsername();
-		if (VoteSQLAPI.mySQLSupport == true)
+		if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+				.getBoolean("VoteSQL.MySQL.Enabled"))
 		{
 			Functions.addData(username);
 		}

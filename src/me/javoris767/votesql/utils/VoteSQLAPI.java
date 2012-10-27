@@ -15,18 +15,16 @@ import org.bukkit.Bukkit;
 public class VoteSQLAPI
 {
 	private VoteSQL _plugin;
-	public static Boolean mySQLSupport;
+
 	private static VoteSQLConfigs cm;
 
 	public VoteSQLAPI(VoteSQL plugin)
 	{
 		_plugin = plugin;
-		VoteSQL.v = plugin.getDescription().getVersion();
+		VoteSQL.v = _plugin.getDescription().getVersion();
 		registerUtils();
 		registerListeners();
 		registerCommands();
-		mySQLSupport = cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-				.getBoolean("VoteSQL.MySQL.Enabled");
 		setUpSQL();
 		attemptMetrics();
 		findVotifier();
@@ -34,7 +32,8 @@ public class VoteSQLAPI
 
 	private void setUpSQL()
 	{
-		if (mySQLSupport)
+		if (cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS).getBoolean(
+				"VoteSQL.MySQL.Enabled"))
 		{
 			Connection connection = null;
 			Statement st = null;
