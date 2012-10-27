@@ -1,9 +1,9 @@
 name: VoteSQL
 main: me.javoris767.votesql.VoteSQL
-version: 0.1
+version: 1.0
 author: javoris767
-authors: [javoris767, mcluke300]
-description: Votifier SQL Logger!
+authors: [javoris767, MCForger]
+description: Votifier SQL/Listener/FlatFile Logger!
 depends: [Votifier]
 commands:
     votesql:
