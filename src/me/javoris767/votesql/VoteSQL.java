@@ -14,7 +14,7 @@ public class VoteSQL extends JavaPlugin
 	{
 		VoteSQLChat.disableMessage();
 		if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-				.getBoolean("VoteSQL.MySQL.Enabled") == true)
+				.getBoolean("VoteSQL.FlatFile.Enabled") == true)
 		{
 			VoteSQLAPI.saveDataFile();
 		}

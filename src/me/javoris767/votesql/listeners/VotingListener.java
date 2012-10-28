@@ -40,10 +40,14 @@ public class VotingListener implements Listener
 					.toLowerCase());
 			if (numberOfVotes == null)
 			{
-				numberOfVotes = 0;
+				numberOfVotes = 1;
+				VoteSQLAPI.voteMap.put(username.toLowerCase(), numberOfVotes++);
+				VoteSQLAPI.saveDataFile();
+				return;
 			}
-			VoteSQLAPI.voteMap.put(username.toLowerCase(), numberOfVotes + 1);
+			VoteSQLAPI.voteMap.put(username.toLowerCase(), numberOfVotes++);
 			VoteSQLAPI.saveDataFile();
+			return;
 		}
 		return;
 	}
