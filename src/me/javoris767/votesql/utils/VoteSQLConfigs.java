@@ -52,11 +52,11 @@ public class VoteSQLConfigs
 			voteSQLSettings.addDefault(path4, "Place User password here");
 			voteSQLSettings.addDefault(path5, "votesql");
 			voteSQLSettings.addDefault(path6,
-					"Put the message you want to be broadcasted!");
+					"&2Thank you for voting %P from %S!");
 			voteSQLSettings.options().copyDefaults(true);
 			voteSQLSettings
 					.options()
-					.header("Thanks for choosing VoteSQL! Simply change the info below. The FlatFileListener on the first vote will not record it!");
+					.header("Thanks for choosing VoteSQL! Simply change the info below. The FlatFileListener on the first vote may not record it!");
 			try
 			{
 				voteSQLSettings.save(file);

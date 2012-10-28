@@ -28,6 +28,7 @@ public class VotingListener implements Listener
 	public void onVote(VotifierEvent event)
 	{
 		Vote vote = event.getVote();
+		String siteVotedOn = vote.getServiceName();
 		String username = vote.getUsername();
 		if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 				.getBoolean("VoteSQL.MySQL.Enabled") == true)
@@ -47,7 +48,7 @@ public class VotingListener implements Listener
 				if (VoteSQLAPI.getConfigs()
 						.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 						.getBoolean("VoteSQL.onVote.Enabled") == true)
-					VoteSQLChat.broadcastVoteMessage();
+					VoteSQLChat.broadcastVoteMessage(username, siteVotedOn);
 				return;
 			}
 			VoteSQLAPI.voteMap.put(username.toLowerCase(), numberOfVotes++);
@@ -56,7 +57,7 @@ public class VotingListener implements Listener
 		if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 				.getBoolean("VoteSQL.onVote.Enabled") == true)
 		{
-			VoteSQLChat.broadcastVoteMessage();
+			VoteSQLChat.broadcastVoteMessage(username, siteVotedOn);
 		}
 		return;
 	}

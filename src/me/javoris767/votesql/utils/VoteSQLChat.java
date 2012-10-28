@@ -67,13 +67,16 @@ public class VoteSQLChat
 		Bukkit.getServer().broadcastMessage(prefix + message);
 	}
 
-	public static void broadcastVoteMessage()
+	public static void broadcastVoteMessage(String playerName,
+			String siteVotedOn)
 	{
-		String message = VoteSQLAPI.getConfigs()
+		String rawMessage = VoteSQLAPI.getConfigs()
 				.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 				.get("VoteSQL.onVote.Message").toString();
-		String newMessage = Functions.colorize(message);
-		Bukkit.getServer().broadcastMessage(prefix + " " + newMessage);
+		rawMessage = rawMessage.replace("%P", playerName.toLowerCase());
+		rawMessage = rawMessage.replace("%S", siteVotedOn.toLowerCase());
+		String finalMessage = Functions.colorize(rawMessage);
+		Bukkit.getServer().broadcastMessage(prefix + finalMessage);
 	}
 
 	public static void dontHavePermission(CommandSender sender)
