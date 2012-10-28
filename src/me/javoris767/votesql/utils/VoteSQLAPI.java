@@ -1,22 +1,27 @@
 package me.javoris767.votesql.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 
 import me.javoris767.votesql.VoteSQL;
 import me.javoris767.votesql.commands.VoteSQLCommand;
 import me.javoris767.votesql.listeners.VotingListener;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 public class VoteSQLAPI
 {
 	private VoteSQL _plugin;
 
 	private static VoteSQLConfigs cm;
+	public static HashMap<String, Integer> voteMap;
 
 	public VoteSQLAPI(VoteSQL plugin)
 	{
@@ -28,6 +33,12 @@ public class VoteSQLAPI
 		setUpSQL();
 		attemptMetrics();
 		findVotifier();
+		if (cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS).getBoolean(
+				"VoteSQL.FlatFile.Enabled") == true)
+		{
+			voteMap = new HashMap<String, Integer>();
+			loadDataFile();
+		}
 	}
 
 	private void setUpSQL()
@@ -61,6 +72,60 @@ public class VoteSQLAPI
 				e.printStackTrace();
 				VoteSQLChat.logSevere(" Error:" + rs);
 			}
+		}
+		return;
+	}
+
+	public static void saveDataFile()
+	{
+		YamlConfiguration config = cm.getConfig(VoteSQLConfFile.PLAYERDATA);
+		File df = new File("plugins" + File.separator + "VoteSQL"
+				+ File.separator + "playerdata.yml");
+		try
+		{
+			config.save(df);
+		}
+		catch (IOException ex)
+		{
+			VoteSQLChat.logInfo("Could not save the data!");
+		}
+		for (String name : voteMap.keySet())
+		{
+			if (name != null || voteMap != null)
+			{
+				config.set("Voter." + name.toLowerCase() + ".amountOfVotes",
+						voteMap.get(name.toLowerCase()).intValue());
+				return;
+			}
+			VoteSQLChat.logInfo("Could not save the data!");
+			return;
+		}
+		return;
+	}
+
+	public static void loadDataFile()
+	{
+		YamlConfiguration config = VoteSQLAPI.getConfigs().getConfig(
+				VoteSQLConfFile.PLAYERDATA);
+
+		ConfigurationSection voteSection = config
+				.getConfigurationSection("Voter");
+		if (voteSection == null)
+		{
+			config.createSection("Voter");
+			return;
+		}
+		if (voteMap == null)
+		{
+			VoteSQLChat.logSevere(" HashMap 'voteMap' did not save correctly!");
+			return;
+		}
+		for (String key : voteSection.getKeys(false))
+		{
+			voteMap.put(
+					key.toLowerCase(),
+					config.getInt("Voter." + key.toLowerCase()
+							+ ".amountOfVotes"));
 		}
 		return;
 	}

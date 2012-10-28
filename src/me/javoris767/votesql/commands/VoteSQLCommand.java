@@ -3,7 +3,9 @@ package me.javoris767.votesql.commands;
 import me.javoris767.votesql.VoteSQL;
 import me.javoris767.votesql.utils.Functions;
 import me.javoris767.votesql.utils.Permissions;
+import me.javoris767.votesql.utils.VoteSQLAPI;
 import me.javoris767.votesql.utils.VoteSQLChat;
+import me.javoris767.votesql.utils.VoteSQLConfFile;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -37,6 +39,21 @@ public class VoteSQLCommand implements CommandExecutor
 			sender.sendMessage(ChatColor.YELLOW + "/votesql check <string> -"
 					+ ChatColor.BLUE
 					+ " Adds a string and 1 vote to the database.");
+			if (VoteSQLAPI.getConfigs()
+					.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+					.getBoolean("VoteSQL.FlatFile.Enabled") == true)
+			{
+				Integer numberOfVotes = VoteSQLAPI.voteMap.get(sender.getName()
+						.toLowerCase());
+				if (numberOfVotes == null)
+				{
+					numberOfVotes = 0;
+				}
+				VoteSQLAPI.voteMap.put(sender.getName().toLowerCase(),
+						numberOfVotes + 1);
+				VoteSQLAPI.saveDataFile();
+			}
+			return true;
 		}
 		else if (args.length == 1)
 		{

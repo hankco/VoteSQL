@@ -29,9 +29,21 @@ public class VotingListener implements Listener
 		Vote vote = event.getVote();
 		String username = vote.getUsername();
 		if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-				.getBoolean("VoteSQL.MySQL.Enabled"))
+				.getBoolean("VoteSQL.MySQL.Enabled") == true)
 		{
 			Functions.addData(username);
+		}
+		if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+				.getBoolean("VoteSQL.FlatFile.Enabled") == true)
+		{
+			Integer numberOfVotes = VoteSQLAPI.voteMap.get(username
+					.toLowerCase());
+			if (numberOfVotes == null)
+			{
+				numberOfVotes = 0;
+			}
+			VoteSQLAPI.voteMap.put(username.toLowerCase(), numberOfVotes + 1);
+			VoteSQLAPI.saveDataFile();
 		}
 		return;
 	}

@@ -33,6 +33,7 @@ public class VoteSQLConfigs
 		{
 		case VOTESQLSETTINGS:
 			CommentedYamlConfiguration voteSQLSettings = new CommentedYamlConfiguration();
+			String path7 = "VoteSQL.FlatFile.Enabled";
 			String path0 = "VoteSQL.MySQL.Enabled";
 			String path1 = "VoteSQL.MySQL.Server";
 			String path2 = "VoteSQL.MySQL.Database";
@@ -41,6 +42,7 @@ public class VoteSQLConfigs
 			String path5 = "VoteSQL.MySQL.Table_Prefix";
 			String path6 = "VoteSQL.onVote.Message";
 			voteSQLSettings.addDefault(path0, false);
+			voteSQLSettings.addDefault(path7, false);
 			voteSQLSettings.addDefault(path1, "Server Address eg.Localhost");
 			voteSQLSettings.addDefault(path2, "Place Database name here");
 			voteSQLSettings.addDefault(path3,
@@ -52,7 +54,7 @@ public class VoteSQLConfigs
 			voteSQLSettings.options().copyDefaults(true);
 			voteSQLSettings
 					.options()
-					.header("Thanks for choosing VoteSQL! Simply change the info below.");
+					.header("Thanks for choosing VoteSQL! Simply change the info below. The FlatFileListener on the first vote will not record it!");
 			try
 			{
 				voteSQLSettings.save(file);
