@@ -3,6 +3,7 @@ package me.javoris767.votesql.listeners;
 import me.javoris767.votesql.VoteSQL;
 import me.javoris767.votesql.utils.Functions;
 import me.javoris767.votesql.utils.VoteSQLAPI;
+import me.javoris767.votesql.utils.VoteSQLChat;
 import me.javoris767.votesql.utils.VoteSQLConfFile;
 
 import org.bukkit.Bukkit;
@@ -43,11 +44,19 @@ public class VotingListener implements Listener
 				numberOfVotes = 1;
 				VoteSQLAPI.voteMap.put(username.toLowerCase(), numberOfVotes++);
 				VoteSQLAPI.saveDataFile();
+				if (VoteSQLAPI.getConfigs()
+						.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+						.getBoolean("VoteSQL.onVote.Enabled") == true)
+					VoteSQLChat.broadcastVoteMessage();
 				return;
 			}
 			VoteSQLAPI.voteMap.put(username.toLowerCase(), numberOfVotes++);
 			VoteSQLAPI.saveDataFile();
-			return;
+		}
+		if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+				.getBoolean("VoteSQL.onVote.Enabled") == true)
+		{
+			VoteSQLChat.broadcastVoteMessage();
 		}
 		return;
 	}

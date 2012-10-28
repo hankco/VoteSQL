@@ -41,6 +41,8 @@ public class VoteSQLConfigs
 			String path4 = "VoteSQL.MySQL.Password";
 			String path5 = "VoteSQL.MySQL.Table_Prefix";
 			String path6 = "VoteSQL.onVote.Message";
+			String path8 = "VoteSQL.onVote.Enabled";
+			voteSQLSettings.addDefault(path8, false);
 			voteSQLSettings.addDefault(path0, false);
 			voteSQLSettings.addDefault(path7, false);
 			voteSQLSettings.addDefault(path1, "Server Address eg.Localhost");
