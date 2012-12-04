@@ -34,7 +34,7 @@ public class VoteSQLCommand implements CommandExecutor
 	public boolean onCommand(CommandSender sender, Command command,
 			String commandLabel, String[] args)
 	{
-		if (command.getName().equalsIgnoreCase("votesql"))
+		if (command.getName().equalsIgnoreCase("votesql")) 
 			return handleVoteMySQL(sender, args);
 		return true;
 	}
@@ -74,7 +74,7 @@ public class VoteSQLCommand implements CommandExecutor
 				}
 				if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 						.getBoolean("VoteSQL.FlatFile.Enabled") == true) {
-					VoteSQLChat.sendMessage(sender, "Command not impemented yet!");
+					VoteSQLChat.sendMessage(sender, "Command not impemented yet :[");
 				}else if(VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 						.getBoolean("VoteSQL.MySQL.Enabled") == true) {
 
@@ -126,7 +126,7 @@ public class VoteSQLCommand implements CommandExecutor
 				VoteSQLChat.sendMessage(sender, ChatColor.YELLOW + "/votesql check <string> -"
 						+ ChatColor.BLUE
 						+ " Adds a string and 1 vote to the database.");
-			}
+			} 
 		}
 		if (args.length == 2) {
 			if (args[0].equalsIgnoreCase("check")) {
