@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
 <jardesc>
-    <jar path="C:/Users/Owner/Dropbox/Public/VoteSQL.jar"/>
-    <options buildIfNeeded="true" compress="true" descriptionLocation="/VoteSQL/Export.jardesc" exportErrors="false" exportWarnings="false" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <jar path="C:/Users/jav/Desktop/VoteSQL.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/VoteSQL/export.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>
     <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
@@ -15,8 +15,9 @@
         <file path="/VoteSQL/plugin.yml"/>
         <file path="/VoteSQL/.gitattributes"/>
         <file path="/VoteSQL/.project"/>
-        <file path="/VoteSQL/README.md"/>
         <file path="/VoteSQL/.gitignore"/>
+        <file path="/VoteSQL/README.md"/>
         <file path="/VoteSQL/.classpath"/>
+        <file path="/VoteSQL/settings.yml"/>
     </selectedElements>
 </jardesc>

@@ -6,11 +6,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import me.javoris767.votesql.VoteSQL;
 
+import org.bukkit.entity.Player;
+
 public class Functions
 {
+	private Connection connection = null;
+	public static List<String> items;
+
 	@SuppressWarnings("unused")
 	private static VoteSQL _plugin;
 
@@ -18,12 +24,18 @@ public class Functions
 	{
 		_plugin = plugin;
 	}
+	public Connection getConnection() {
+		return connection;
+	}	
 
 	public static String colorize(String string)
 	{
 		return string.replaceAll("(?i)&([a-k0-9])", "\u00A7$1");
 	}
-
+	public static void addMoney(Player player, int money) 
+	{
+		VoteSQLAPI.econ.depositPlayer(player.getName(), money);
+	}
 	public static void addData(String playername)
 	{
 		PreparedStatement pst = null;
@@ -36,16 +48,16 @@ public class Functions
 			con = DriverManager.getConnection(
 					"jdbc:MySQL://"
 							+ VoteSQLAPI.getConfigs()
-									.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-									.getString("VoteSQL.MySQL.Server")
+							.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+							.getString("VoteSQL.MySQL.Server")
 							+ "/"
 							+ VoteSQLAPI.getConfigs()
-									.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-									.getString("VoteSQL.MySQL.Database"),
-					VoteSQLAPI.getConfigs()
+							.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+							.getString("VoteSQL.MySQL.Database"),
+							VoteSQLAPI.getConfigs()
 							.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 							.getString("VoteSQL.MySQL.User"),
-					VoteSQLAPI.getConfigs()
+							VoteSQLAPI.getConfigs()
 							.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 							.getString("VoteSQL.MySQL.Password"));
 

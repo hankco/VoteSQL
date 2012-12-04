@@ -16,7 +16,6 @@ public class VoteSQLConfigs
 
 	private final HashMap<VoteSQLConfFile, YamlConfiguration> _configurations;
 
-	@SuppressWarnings("unused")
 	private final VoteSQL _plugin;
 
 	public VoteSQLConfigs(VoteSQL plugin)
@@ -42,21 +41,26 @@ public class VoteSQLConfigs
 			String path5 = "VoteSQL.MySQL.Table_Prefix";
 			String path6 = "VoteSQL.onVote.Message";
 			String path8 = "VoteSQL.onVote.Enabled";
+			String path9 = "VoteSQL.currency.Enabled";
+			String path10 = "VoteSQL.currency.Amount";
+			String path11 = "VoteSQL.currency.Message";
+
 			voteSQLSettings.addDefault(path8, false);
 			voteSQLSettings.addDefault(path0, false);
 			voteSQLSettings.addDefault(path7, false);
 			voteSQLSettings.addDefault(path1, "Server Address eg.Localhost");
 			voteSQLSettings.addDefault(path2, "Place Database name here");
-			voteSQLSettings.addDefault(path3,
-					"Place User of MySQL Database here");
+			voteSQLSettings.addDefault(path3, "Place User of MySQL Database here");
 			voteSQLSettings.addDefault(path4, "Place User password here");
 			voteSQLSettings.addDefault(path5, "votesql");
-			voteSQLSettings.addDefault(path6,
-					"&2Thank you for voting %P from %S!");
+			voteSQLSettings.addDefault(path6, "&2Thank you for voting %P from %S!");
+			voteSQLSettings.addDefault(path9, false);
+			voteSQLSettings.addDefault(path10, 150);
+			voteSQLSettings.addDefault(path11, "&2%P, You received %M dollars!");
+
 			voteSQLSettings.options().copyDefaults(true);
-			voteSQLSettings
-					.options()
-					.header("Thanks for choosing VoteSQL! Simply change the info below. The FlatFileListener on the first vote may not record it!");
+			voteSQLSettings.options()
+			.header("Thanks for choosing VoteSQL! Simply change the info below. The FlatFileListener on the first vote may not record it!");
 			try
 			{
 				voteSQLSettings.save(file);
@@ -221,13 +225,13 @@ public class VoteSQLConfigs
 		{
 			if (_configurations.containsKey(file))
 				try
-				{
+			{
 					_configurations.get(file).save(new File(file.getPath()));
-				}
-				catch (IOException e)
-				{
+			}
+			catch (IOException e)
+			{
 
-				}
+			}
 		}
 	}
 
@@ -417,5 +421,9 @@ public class VoteSQLConfigs
 		}
 
 		return false;
+	}
+
+	public VoteSQL get_plugin() {
+		return _plugin;
 	}
 }

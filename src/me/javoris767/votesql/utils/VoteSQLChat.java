@@ -7,6 +7,7 @@ import me.javoris767.votesql.VoteSQL;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public class VoteSQLChat
 {
@@ -23,8 +24,8 @@ public class VoteSQLChat
 		_plugin = plugin;
 		pluginName = _plugin.getName();
 		logName = "[" + pluginName + "]";
-		prefix = ChatColor.GRAY + "[" + ChatColor.DARK_AQUA + pluginName
-				+ ChatColor.GRAY + "]";
+		prefix = "[" + ChatColor.DARK_AQUA + pluginName
+				+ ChatColor.WHITE + "] ";
 	}
 
 	public static void logInfo(String message)
@@ -57,7 +58,7 @@ public class VoteSQLChat
 		logInfo(" DEBUG: We got here!");
 	}
 
-	public void sendMessage(CommandSender sender, String message)
+	public static void sendMessage(CommandSender sender, String message)
 	{
 		sender.sendMessage(prefix + message);
 	}
@@ -72,15 +73,29 @@ public class VoteSQLChat
 	{
 		String rawMessage = VoteSQLAPI.getConfigs()
 				.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-				.get("VoteSQL.onVote.Message").toString();
+				.getString("VoteSQL.onVote.Message").toString();
 		rawMessage = rawMessage.replace("%P", playerName.toLowerCase());
 		rawMessage = rawMessage.replace("%S", siteVotedOn.toLowerCase());
 		String finalMessage = Functions.colorize(rawMessage);
 		Bukkit.getServer().broadcastMessage(prefix + finalMessage);
 	}
-
+	public static void sendCurrencyReveivedMessage(Player player, String playerName,
+			int money)
+	{
+		String rawMessage = VoteSQLAPI.getConfigs()
+				.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+				.getString("VoteSQL.currency.Message").toString();
+		rawMessage = rawMessage.replace("%P", playerName.toLowerCase());
+		rawMessage = rawMessage.replace("%M" , "" + money);
+		String finalMessage = Functions.colorize(rawMessage);
+		player.sendMessage(prefix + finalMessage);
+	}
 	public static void dontHavePermission(CommandSender sender)
 	{
 		sender.sendMessage(ChatColor.DARK_RED + "You do not have permission!");
+	}
+	public static void errorMessage(Exception e)
+	{
+		logWarning(" Error checking for updates " + e);
 	}
 }

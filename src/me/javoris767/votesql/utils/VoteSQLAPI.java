@@ -11,28 +11,32 @@ import java.util.HashMap;
 import me.javoris767.votesql.VoteSQL;
 import me.javoris767.votesql.commands.VoteSQLCommand;
 import me.javoris767.votesql.listeners.VotingListener;
+import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class VoteSQLAPI
 {
 	private VoteSQL _plugin;
+	public static Economy econ = null;
 
 	private static VoteSQLConfigs cm;
-	public static HashMap<String, Integer> voteMap;
+	public static HashMap<String, Integer> voteMap = new HashMap<String, Integer>();
 
 	public VoteSQLAPI(VoteSQL plugin)
 	{
 		_plugin = plugin;
 		VoteSQL.v = _plugin.getDescription().getVersion();
 		registerUtils();
+		findVotifier();
+		findVault();
 		registerListeners();
 		registerCommands();
 		setUpSQL();
 		attemptMetrics();
-		findVotifier();
 		if (cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS).getBoolean(
 				"VoteSQL.FlatFile.Enabled") == true)
 		{
@@ -44,36 +48,39 @@ public class VoteSQLAPI
 	private void setUpSQL()
 	{
 		if (cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS).getBoolean(
-				"VoteSQL.MySQL.Enabled"))
-		{
-			Connection connection = null;
-			Statement st = null;
-			int rs = 0;
-			try
+				"VoteSQL.MySQL.Enabled")) {
+			VoteSQLChat.logInfo("Connecting to SQL database!");
 			{
-				connection = DriverManager.getConnection("jdbc:MySQL://"
-						+ cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-								.getString("VoteSQL.MySQL.Server")
-						+ "/"
-						+ cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-								.getString("VoteSQL.MySQL.Database"),
-						cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-								.getString("VoteSQL.MySQL.User"),
-						cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-								.getString("VoteSQL.MySQL.Password"));
-				st = connection.createStatement();
-				rs = st.executeUpdate("CREATE TABLE IF NOT EXISTS `"
-						+ cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-								.getString("VoteSQL.MySQL.Table_Prefix")
-						+ "`( `id` MEDIUMINT NOT NULL AUTO_INCREMENT, `playername` text, `votes` MEDIUMINT(255), PRIMARY KEY (`id`))");
+				Connection connection = null;
+				Statement st = null;
+				int rs = 0;
+				try
+				{
+					connection = DriverManager.getConnection("jdbc:MySQL://"
+							+ cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+							.getString("VoteSQL.MySQL.Server")
+							+ "/"
+							+ cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+							.getString("VoteSQL.MySQL.Database"),
+							cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+							.getString("VoteSQL.MySQL.User"),
+							cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+							.getString("VoteSQL.MySQL.Password"));
+					st = connection.createStatement();
+					rs = st.executeUpdate("CREATE TABLE IF NOT EXISTS `"
+							+ cm.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+							.getString("VoteSQL.MySQL.Table_Prefix")
+							+ "`( `id` MEDIUMINT NOT NULL AUTO_INCREMENT, `playername` text, `votes` MEDIUMINT(255), PRIMARY KEY (`id`))");
+					VoteSQLChat.logInfo("SQL database connected!");
+				}
+				catch (SQLException e)
+				{
+					e.printStackTrace();
+					VoteSQLChat.logSevere(" Error:" + rs);
+				}
 			}
-			catch (SQLException e)
-			{
-				e.printStackTrace();
-				VoteSQLChat.logSevere(" Error:" + rs);
-			}
+			return;
 		}
-		return;
 	}
 
 	public static void saveDataFile()
@@ -142,7 +149,24 @@ public class VoteSQLAPI
 			VoteSQLChat.logInfo(" Disabling the plugin!");
 			Bukkit.getPluginManager().disablePlugin(_plugin);
 		}
-
+	}
+	private boolean findVault()
+	{
+		if (Bukkit.getPluginManager().getPlugin("Vault") != null)
+		{
+			VoteSQLChat.logInfo(" Vault has been found!");
+			RegisteredServiceProvider<Economy> rsp = _plugin.getServer().getServicesManager().getRegistration(Economy.class);
+			if (rsp == null) {
+				return false;
+			}
+			econ = ((Economy)rsp.getProvider());
+			return econ != null;
+		}
+		else
+		{
+			VoteSQLChat.logInfo(" Vault can not be found!");
+		}
+		return false;
 	}
 
 	private void registerCommands()
@@ -163,6 +187,7 @@ public class VoteSQLAPI
 	private void registerListeners()
 	{
 		new VotingListener(_plugin);
+		//new JoinListener(_plugin);
 	}
 
 	public static VoteSQLConfigs getConfigs()

@@ -1,9 +1,17 @@
 package me.javoris767.votesql.commands;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import me.javoris767.votesql.VoteSQL;
 import me.javoris767.votesql.utils.Functions;
 import me.javoris767.votesql.utils.Permissions;
+import me.javoris767.votesql.utils.VoteSQLAPI;
 import me.javoris767.votesql.utils.VoteSQLChat;
+import me.javoris767.votesql.utils.VoteSQLConfFile;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -13,6 +21,9 @@ import org.bukkit.command.CommandSender;
 public class VoteSQLCommand implements CommandExecutor
 {
 
+	String database = VoteSQLAPI.getConfigs()
+			.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+			.getString("VoteSQL.MySQL.Table_Prefix");
 	public VoteSQL _plugin;
 
 	public VoteSQLCommand(VoteSQL plugin)
@@ -32,11 +43,14 @@ public class VoteSQLCommand implements CommandExecutor
 	{
 		if (args.length == 0)
 		{
-			sender.sendMessage(ChatColor.YELLOW + "/votesql reload -"
+			VoteSQLChat.sendMessage(sender, ChatColor.YELLOW + "/votesql reload -"
 					+ ChatColor.BLUE + " Reloads the config.");
-			sender.sendMessage(ChatColor.YELLOW + "/votesql check <string> -"
+			VoteSQLChat.sendMessage(sender, ChatColor.YELLOW + "/votesql check <string> -"
 					+ ChatColor.BLUE
-					+ " Adds a string and 1 vote to the database.");
+					+ " Adds 1 vote to the database.");
+			VoteSQLChat.sendMessage(sender, ChatColor.YELLOW + "/votesql top -"
+					+ ChatColor.BLUE
+					+ " Shows the top 5 Voters!");
 			return true;
 		}
 		else if (args.length == 1)
@@ -49,9 +63,58 @@ public class VoteSQLCommand implements CommandExecutor
 					return true;
 				}
 				_plugin.reloadConfig();
-				sender.sendMessage(ChatColor.GREEN + "[" + "VoteSQL "
-						+ _plugin.getDescription().getVersion()
-						+ "]: Config reloaded!");
+				VoteSQLChat.sendMessage(sender, ChatColor.GREEN + "Config reloaded!");
+			}
+			else if (args[0].equalsIgnoreCase("top"))
+			{
+				if(!sender.hasPermission(Permissions.MAINCOMMAND_TOP)) 
+				{
+					VoteSQLChat.dontHavePermission(sender);
+					return true;
+				}
+				if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+						.getBoolean("VoteSQL.FlatFile.Enabled") == true) {
+					VoteSQLChat.sendMessage(sender, "Command not impemented yet!");
+				}else if(VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+						.getBoolean("VoteSQL.MySQL.Enabled") == true) {
+
+					Connection con = null;
+					Statement stmt = null;
+					ResultSet rs = null;
+					try {
+						con = DriverManager.getConnection(
+								"jdbc:MySQL://"
+										+ VoteSQLAPI.getConfigs()
+										.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+										.getString("VoteSQL.MySQL.Server")
+										+ "/"
+										+ VoteSQLAPI.getConfigs()
+										.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+										.getString("VoteSQL.MySQL.Database"),
+										VoteSQLAPI.getConfigs()
+										.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+										.getString("VoteSQL.MySQL.User"),
+										VoteSQLAPI.getConfigs()
+										.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
+										.getString("VoteSQL.MySQL.Password"));
+
+						stmt = con.createStatement();
+
+						rs = stmt.executeQuery("SELECT * FROM " + database + " ORDER BY votes DESC LIMIT 5;");
+
+						int i = 1;
+
+						VoteSQLChat.sendMessage(sender, ChatColor.GOLD + "-=-=-=-=-=" + ChatColor.DARK_AQUA + "Top 5 Voters" + ChatColor.GOLD + "=-=-=-=-=-");
+
+						while(rs.next()) {
+							String q = ChatColor.DARK_AQUA + String.valueOf(i) + ". " + ChatColor.GREEN + rs.getString("playername") + ChatColor.DARK_AQUA + " - " + ChatColor.GREEN + rs.getInt("votes") + " votes";
+							VoteSQLChat.sendMessage(sender, q);
+							i++;
+						}
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 			else if (args[0].equalsIgnoreCase("check"))
 			{
@@ -60,27 +123,22 @@ public class VoteSQLCommand implements CommandExecutor
 					VoteSQLChat.dontHavePermission(sender);
 					return true;
 				}
-				sender.sendMessage(ChatColor.YELLOW
-						+ "/votesql check <string> -" + ChatColor.BLUE
+				VoteSQLChat.sendMessage(sender, ChatColor.YELLOW + "/votesql check <string> -"
+						+ ChatColor.BLUE
 						+ " Adds a string and 1 vote to the database.");
 			}
-			else if (args.length == 2)
-			{
-				if (args[0].equalsIgnoreCase("check"))
-				{
-					if (!sender.hasPermission(Permissions.MAINCOMMAND_CHECK))
-					{
-						VoteSQLChat.dontHavePermission(sender);
-						return true;
-					}
-					Functions.addData(args[1]);
-					sender.sendMessage(ChatColor.GREEN + "[" + "VoteSQL "
-							+ _plugin.getDescription().getVersion()
-							+ "]: Vote Passed!");
-				}
-			}
-			return true;
 		}
-		return true;
+		if (args.length == 2) {
+			if (args[0].equalsIgnoreCase("check")) {
+				if (!sender.hasPermission(Permissions.MAINCOMMAND_CHECK))
+				{
+					VoteSQLChat.dontHavePermission(sender);
+					return true;
+				}
+				Functions.addData(args[1]);
+				VoteSQLChat.sendMessage(sender, ChatColor.YELLOW + "Vote Passed!");
+			}
+		}
+		return false;
 	}
 }
