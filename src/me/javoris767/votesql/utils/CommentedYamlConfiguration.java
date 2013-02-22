@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.google.common.io.Files;
@@ -34,6 +35,18 @@ public class CommentedYamlConfiguration extends YamlConfiguration
 
 		save(new File(file));
 	}
+	
+	@Override
+	public void load(String file) throws IOException, InvalidConfigurationException
+	{
+		if (file == null)
+		{
+			throw new IllegalArgumentException("File cannot be null");
+		}
+
+		load(new File(file));
+	}
+	
 
 	@Override
 	public void save(File file) throws IOException

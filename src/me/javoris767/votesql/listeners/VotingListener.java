@@ -35,12 +35,14 @@ public class VotingListener implements Listener
 		int money = VoteSQLAPI.getConfigs()
 				.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 				.getInt("VoteSQL.currency.Amount");
+
 		// Broadcast Vote
 		if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 				.getBoolean("VoteSQL.onVote.Enabled") == true)
 		{
 			VoteSQLChat.broadcastVoteMessage(username, siteVotedOn);
 		}
+
 		// Currency
 		if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
 			VoteSQLChat.logSevere("Vault not found!");
@@ -53,6 +55,7 @@ public class VotingListener implements Listener
 						.getConfig(VoteSQLConfFile
 								.VOTESQLSETTINGS).getInt("VoteSQL.currency.Amount"));
 			}
+
 		// Add to SQL
 		if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 				.getBoolean("VoteSQL.MySQL.Enabled") == true)
@@ -63,6 +66,7 @@ public class VotingListener implements Listener
 				Functions.addData(username);
 			}
 		}
+
 		// Add to FlatFile
 		if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
 				.getBoolean("VoteSQL.FlatFile.Enabled") == true)

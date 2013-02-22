@@ -30,6 +30,7 @@ public class VoteSQLAPI
 	{
 		_plugin = plugin;
 		VoteSQL.v = _plugin.getDescription().getVersion();
+		
 		registerUtils();
 		findVotifier();
 		findVault();

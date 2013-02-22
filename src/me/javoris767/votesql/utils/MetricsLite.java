@@ -63,6 +63,7 @@ public class MetricsLite
 		this.guid = this.configuration.getString("guid");
 	}
 
+	@SuppressWarnings("deprecation")
 	public boolean start()
 	{
 		synchronized (this.optOutLock)
