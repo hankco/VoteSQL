@@ -2,8 +2,7 @@ package me.javoris767.votesql.utils;
 
 public enum VoteSQLConfFile
 {
-	VOTESQLSETTINGS("plugins/VoteSQL/settings.yml"), PLAYERDATA(
-			"plugins/VoteSQL/playerdata.yml");
+	PLAYERDATA("plugins/VoteSQL/playerdata.yml");
 
 	public static VoteSQLConfFile fromName(String name)
 	{

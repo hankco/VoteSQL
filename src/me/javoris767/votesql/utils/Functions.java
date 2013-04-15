@@ -12,12 +12,13 @@ import me.javoris767.votesql.VoteSQL;
 
 import org.bukkit.entity.Player;
 
+import com.vexsoftware.votifier.model.Vote;
+
 public class Functions
 {
 	private Connection connection = null;
 	public static List<String> items;
 
-	@SuppressWarnings("unused")
 	private static VoteSQL _plugin;
 
 	public Functions(VoteSQL plugin)
@@ -27,6 +28,14 @@ public class Functions
 	public Connection getConnection() {
 		return connection;
 	}	
+	public static String formatMessage(String message, Vote vote) {
+		if ((message == null) || (vote == null))
+			return "";
+		if (message.indexOf("/") == 0) {
+			message = message.substring(1);
+		}
+		return message;
+	}
 
 	public static String colorize(String string)
 	{
@@ -47,23 +56,13 @@ public class Functions
 		{
 			con = DriverManager.getConnection(
 					"jdbc:MySQL://"
-							+ VoteSQLAPI.getConfigs()
-							.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-							.getString("VoteSQL.MySQL.Server")
+							+ _plugin.getConfig().getString("VoteSQL.MySQL.Server")
 							+ "/"
-							+ VoteSQLAPI.getConfigs()
-							.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-							.getString("VoteSQL.MySQL.Database"),
-							VoteSQLAPI.getConfigs()
-							.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-							.getString("VoteSQL.MySQL.User"),
-							VoteSQLAPI.getConfigs()
-							.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-							.getString("VoteSQL.MySQL.Password"));
+							+ _plugin.getConfig().getString("VoteSQL.MySQL.Database"),
+							_plugin.getConfig().getString("VoteSQL.MySQL.User"),
+							_plugin.getConfig().getString("VoteSQL.MySQL.Password"));
 
-			String database = VoteSQLAPI.getConfigs()
-					.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-					.getString("VoteSQL.MySQL.Table_Prefix");
+			String database = _plugin.getConfig().getString("VoteSQL.MySQL.Table_Prefix");
 			stmt = con.createStatement();
 			if (stmt.execute("SELECT * FROM " + database
 					+ " WHERE playername='" + playername + "';"))

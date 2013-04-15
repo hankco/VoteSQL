@@ -9,10 +9,7 @@ import java.sql.Statement;
 import me.javoris767.votesql.VoteSQL;
 import me.javoris767.votesql.utils.Functions;
 import me.javoris767.votesql.utils.Permissions;
-import me.javoris767.votesql.utils.VoteSQLAPI;
 import me.javoris767.votesql.utils.VoteSQLChat;
-import me.javoris767.votesql.utils.VoteSQLConfFile;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -21,11 +18,7 @@ import org.bukkit.command.CommandSender;
 public class VoteSQLCommand implements CommandExecutor
 {
 
-	String database = VoteSQLAPI.getConfigs()
-			.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-			.getString("VoteSQL.MySQL.Table_Prefix");
 	public VoteSQL _plugin;
-
 	public VoteSQLCommand(VoteSQL plugin)
 	{
 		_plugin = plugin;
@@ -72,31 +65,20 @@ public class VoteSQLCommand implements CommandExecutor
 					VoteSQLChat.dontHavePermission(sender);
 					return true;
 				}
-				if (VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-						.getBoolean("VoteSQL.FlatFile.Enabled") == true) {
-					VoteSQLChat.sendMessage(sender, "Command not impemented yet :[");
-				}else if(VoteSQLAPI.getConfigs().getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-						.getBoolean("VoteSQL.MySQL.Enabled") == true) {
+				if(_plugin.getConfig().getBoolean("VoteSQL.MySQL.Enabled") == true) {
 
+					String database = _plugin.getConfig().getString("VoteSQL.MySQL.Table_Prefix");
 					Connection con = null;
 					Statement stmt = null;
 					ResultSet rs = null;
 					try {
 						con = DriverManager.getConnection(
 								"jdbc:MySQL://"
-										+ VoteSQLAPI.getConfigs()
-										.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-										.getString("VoteSQL.MySQL.Server")
+										+ _plugin.getConfig().getString("VoteSQL.MySQL.Server")
 										+ "/"
-										+ VoteSQLAPI.getConfigs()
-										.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-										.getString("VoteSQL.MySQL.Database"),
-										VoteSQLAPI.getConfigs()
-										.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-										.getString("VoteSQL.MySQL.User"),
-										VoteSQLAPI.getConfigs()
-										.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-										.getString("VoteSQL.MySQL.Password"));
+										+ _plugin.getConfig().getString("VoteSQL.MySQL.Database"),
+										_plugin.getConfig().getString("VoteSQL.MySQL.User"),
+										_plugin.getConfig().getString("VoteSQL.MySQL.Password"));
 
 						stmt = con.createStatement();
 
@@ -115,28 +97,31 @@ public class VoteSQLCommand implements CommandExecutor
 						e.printStackTrace();
 					}
 				}
+				else 				if (_plugin.getConfig().getBoolean("VoteSQL.FlatFile.Enabled") == true)  {
+					VoteSQLChat.sendMessage(sender, "Command not impemented yet :[");
+				}
+				else if (args[0].equalsIgnoreCase("check"))
+				{
+					if (!sender.hasPermission(Permissions.MAINCOMMAND_CHECK))
+					{
+						VoteSQLChat.dontHavePermission(sender);
+						return true;
+					}
+					VoteSQLChat.sendMessage(sender, ChatColor.YELLOW + "/votesql check <string> -"
+							+ ChatColor.BLUE
+							+ " Adds a string and 1 vote to the database.");
+				} 
 			}
-			else if (args[0].equalsIgnoreCase("check"))
-			{
-				if (!sender.hasPermission(Permissions.MAINCOMMAND_CHECK))
-				{
-					VoteSQLChat.dontHavePermission(sender);
-					return true;
+			if (args.length == 2) {
+				if (args[0].equalsIgnoreCase("check")) {
+					if (!sender.hasPermission(Permissions.MAINCOMMAND_CHECK))
+					{
+						VoteSQLChat.dontHavePermission(sender);
+						return true;
+					}
+					Functions.addData(args[1]);
+					VoteSQLChat.sendMessage(sender, ChatColor.YELLOW + "Vote Passed!");
 				}
-				VoteSQLChat.sendMessage(sender, ChatColor.YELLOW + "/votesql check <string> -"
-						+ ChatColor.BLUE
-						+ " Adds a string and 1 vote to the database.");
-			} 
-		}
-		if (args.length == 2) {
-			if (args[0].equalsIgnoreCase("check")) {
-				if (!sender.hasPermission(Permissions.MAINCOMMAND_CHECK))
-				{
-					VoteSQLChat.dontHavePermission(sender);
-					return true;
-				}
-				Functions.addData(args[1]);
-				VoteSQLChat.sendMessage(sender, ChatColor.YELLOW + "Vote Passed!");
 			}
 		}
 		return false;

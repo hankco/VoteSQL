@@ -71,9 +71,7 @@ public class VoteSQLChat
 	public static void broadcastVoteMessage(String playerName,
 			String siteVotedOn)
 	{
-		String rawMessage = VoteSQLAPI.getConfigs()
-				.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-				.getString("VoteSQL.onVote.Message").toString();
+		String rawMessage = _plugin.getConfig().getString("VoteSQL.onVote.Message").toString();
 		rawMessage = rawMessage.replace("%P", playerName.toLowerCase());
 		rawMessage = rawMessage.replace("%S", siteVotedOn.toLowerCase());
 		String finalMessage = Functions.colorize(rawMessage);
@@ -82,9 +80,7 @@ public class VoteSQLChat
 	public static void sendCurrencyReveivedMessage(Player player, String playerName,
 			int money)
 	{
-		String rawMessage = VoteSQLAPI.getConfigs()
-				.getConfig(VoteSQLConfFile.VOTESQLSETTINGS)
-				.getString("VoteSQL.currency.Message").toString();
+		String rawMessage = _plugin.getConfig().getString("VoteSQL.currency.Message").toString();
 		rawMessage = rawMessage.replace("%P", playerName.toLowerCase());
 		rawMessage = rawMessage.replace("%M" , "" + money);
 		String finalMessage = Functions.colorize(rawMessage);
