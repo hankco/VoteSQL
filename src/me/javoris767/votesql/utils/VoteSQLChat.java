@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 
 public class VoteSQLChat
 {
-	private static VoteSQL _plugin;
+	private static VoteSQL plugin;
 
 	private static String pluginName;
 	private static String logName;
@@ -19,10 +19,10 @@ public class VoteSQLChat
 
 	private static final Logger log = Logger.getLogger("Minecraft");
 
-	public VoteSQLChat(VoteSQL plugin)
+	public VoteSQLChat(VoteSQL voteSQL)
 	{
-		_plugin = plugin;
-		pluginName = _plugin.getName();
+		plugin = voteSQL;
+		pluginName = "VoteSQL";
 		logName = "[" + pluginName + "]";
 		prefix = "[" + ChatColor.DARK_AQUA + pluginName
 				+ ChatColor.WHITE + "] ";
@@ -71,7 +71,7 @@ public class VoteSQLChat
 	public static void broadcastVoteMessage(String playerName,
 			String siteVotedOn)
 	{
-		String rawMessage = _plugin.getConfig().getString("VoteSQL.onVote.Message").toString();
+		String rawMessage = plugin.getConfig().getString("VoteSQL.onVote.Message").toString();
 		rawMessage = rawMessage.replace("%P", playerName.toLowerCase());
 		rawMessage = rawMessage.replace("%S", siteVotedOn.toLowerCase());
 		String finalMessage = Functions.colorize(rawMessage);
@@ -80,7 +80,7 @@ public class VoteSQLChat
 	public static void sendCurrencyReveivedMessage(Player player, String playerName,
 			int money)
 	{
-		String rawMessage = _plugin.getConfig().getString("VoteSQL.currency.Message").toString();
+		String rawMessage = plugin.getConfig().getString("VoteSQL.currency.Message").toString();
 		rawMessage = rawMessage.replace("%P", playerName.toLowerCase());
 		rawMessage = rawMessage.replace("%M" , "" + money);
 		String finalMessage = Functions.colorize(rawMessage);

@@ -6,7 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 
 import me.javoris767.votesql.VoteSQL;
 
@@ -17,13 +16,12 @@ import com.vexsoftware.votifier.model.Vote;
 public class Functions
 {
 	private Connection connection = null;
-	public static List<String> items;
 
-	private static VoteSQL _plugin;
+	private static VoteSQL plugin;
 
-	public Functions(VoteSQL plugin)
+	public Functions(VoteSQL voteSQL)
 	{
-		_plugin = plugin;
+		plugin = voteSQL;
 	}
 	public Connection getConnection() {
 		return connection;
@@ -56,13 +54,13 @@ public class Functions
 		{
 			con = DriverManager.getConnection(
 					"jdbc:MySQL://"
-							+ _plugin.getConfig().getString("VoteSQL.MySQL.Server")
+							+ plugin.getConfig().getString("VoteSQL.MySQL.Server")
 							+ "/"
-							+ _plugin.getConfig().getString("VoteSQL.MySQL.Database"),
-							_plugin.getConfig().getString("VoteSQL.MySQL.User"),
-							_plugin.getConfig().getString("VoteSQL.MySQL.Password"));
+							+ plugin.getConfig().getString("VoteSQL.MySQL.Database"),
+							plugin.getConfig().getString("VoteSQL.MySQL.User"),
+							plugin.getConfig().getString("VoteSQL.MySQL.Password"));
 
-			String database = _plugin.getConfig().getString("VoteSQL.MySQL.Table_Prefix");
+			String database = plugin.getConfig().getString("VoteSQL.MySQL.Table_Prefix");
 			stmt = con.createStatement();
 			if (stmt.execute("SELECT * FROM " + database
 					+ " WHERE playername='" + playername + "';"))

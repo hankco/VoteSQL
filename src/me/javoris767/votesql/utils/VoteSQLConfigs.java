@@ -9,12 +9,12 @@ public class VoteSQLConfigs
 {
 
 	private final HashMap<VoteSQLConfFile, YamlConfiguration> _configurations;
-	VoteSQL _plugin;
+	VoteSQL plugin;
 
-	public VoteSQLConfigs(VoteSQL plugin)
+	public VoteSQLConfigs(VoteSQL voteSQL)
 	{
+		plugin = voteSQL;
 		_configurations = new HashMap<VoteSQLConfFile, YamlConfiguration>();
-		_plugin = plugin;
 	}
 	public YamlConfiguration getConfig(VoteSQLConfFile file)
 	{

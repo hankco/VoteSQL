@@ -5,11 +5,11 @@ import me.javoris767.votesql.VoteSQL;
 public class Permissions
 {
 	@SuppressWarnings("unused")
-	private VoteSQL _plugin;
+	private VoteSQL plugin;
 
-	public Permissions(VoteSQL plugin)
+	public Permissions(VoteSQL voteSQL)
 	{
-		_plugin = plugin;
+		plugin = voteSQL;
 	}
 
 	public static final String MAINCOMMAND_CHECK = "votesql.check";

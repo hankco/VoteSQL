@@ -18,10 +18,10 @@ import org.bukkit.command.CommandSender;
 public class VoteSQLCommand implements CommandExecutor
 {
 
-	public VoteSQL _plugin;
-	public VoteSQLCommand(VoteSQL plugin)
+	public VoteSQL plugin;
+	public VoteSQLCommand(VoteSQL voteSQL)
 	{
-		_plugin = plugin;
+		plugin = voteSQL;
 	}
 
 	public boolean onCommand(CommandSender sender, Command command,
@@ -55,7 +55,7 @@ public class VoteSQLCommand implements CommandExecutor
 					VoteSQLChat.dontHavePermission(sender);
 					return true;
 				}
-				_plugin.reloadConfig();
+				plugin.reloadConfig();
 				VoteSQLChat.sendMessage(sender, ChatColor.GREEN + "Config reloaded!");
 			}
 			else if (args[0].equalsIgnoreCase("top"))
@@ -65,20 +65,20 @@ public class VoteSQLCommand implements CommandExecutor
 					VoteSQLChat.dontHavePermission(sender);
 					return true;
 				}
-				if(_plugin.getConfig().getBoolean("VoteSQL.MySQL.Enabled") == true) {
+				if(plugin.getConfig().getBoolean("VoteSQL.MySQL.Enabled") == true) {
 
-					String database = _plugin.getConfig().getString("VoteSQL.MySQL.Table_Prefix");
+					String database = plugin.getConfig().getString("VoteSQL.MySQL.Table_Prefix");
 					Connection con = null;
 					Statement stmt = null;
 					ResultSet rs = null;
 					try {
 						con = DriverManager.getConnection(
 								"jdbc:MySQL://"
-										+ _plugin.getConfig().getString("VoteSQL.MySQL.Server")
+										+ plugin.getConfig().getString("VoteSQL.MySQL.Server")
 										+ "/"
-										+ _plugin.getConfig().getString("VoteSQL.MySQL.Database"),
-										_plugin.getConfig().getString("VoteSQL.MySQL.User"),
-										_plugin.getConfig().getString("VoteSQL.MySQL.Password"));
+										+ plugin.getConfig().getString("VoteSQL.MySQL.Database"),
+										plugin.getConfig().getString("VoteSQL.MySQL.User"),
+										plugin.getConfig().getString("VoteSQL.MySQL.Password"));
 
 						stmt = con.createStatement();
 
@@ -97,7 +97,8 @@ public class VoteSQLCommand implements CommandExecutor
 						e.printStackTrace();
 					}
 				}
-				else 				if (_plugin.getConfig().getBoolean("VoteSQL.FlatFile.Enabled") == true)  {
+				else 			
+					if (plugin.getConfig().getBoolean("VoteSQL.FlatFile.Enabled") == true && (plugin.getConfig().getBoolean("VoteSQL.MYSQL.Enabled") == false)) {
 					VoteSQLChat.sendMessage(sender, "Command not impemented yet :[");
 				}
 				else if (args[0].equalsIgnoreCase("check"))

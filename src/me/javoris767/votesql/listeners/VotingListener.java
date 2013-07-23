@@ -1,5 +1,6 @@
 package me.javoris767.votesql.listeners;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,22 +9,22 @@ import me.javoris767.votesql.utils.Functions;
 import me.javoris767.votesql.utils.VoteSQLAPI;
 import me.javoris767.votesql.utils.VoteSQLChat;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-
 import com.vexsoftware.votifier.model.Vote;
 import com.vexsoftware.votifier.model.VotifierEvent;
 
 public class VotingListener implements Listener
 {
-	private VoteSQL _plugin;
+	private VoteSQL plugin;
 
-	public VotingListener(VoteSQL plugin)
+	public VotingListener(VoteSQL voteSQL)
 	{
-		_plugin = plugin;
-		Bukkit.getServer().getPluginManager().registerEvents(this, _plugin);
+		plugin = voteSQL;
+		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled=true)
@@ -33,58 +34,68 @@ public class VotingListener implements Listener
 		String siteVotedOn = vote.getServiceName();
 		String username = vote.getUsername();
 		Player player = Bukkit.getPlayer(username);
-		int money = _plugin.getConfig().getInt("VoteSQL.currency.Amount");
+		int money = plugin.getConfig().getInt("VoteSQL.currency.Amount");
 
 		// Broadcast Vote
-		if (_plugin.getConfig().getBoolean("VoteSQL.onVote.messageEnabled") == true)
+		if (plugin.getConfig().getBoolean("VoteSQL.onVote.messageEnabled") == true)
 		{
 			VoteSQLChat.broadcastVoteMessage(username, siteVotedOn);
-		}
+			VoteSQLChat.logInfo("Calling broadcast");
+			}
 
 		// Currency
 		if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
 			VoteSQLChat.logSevere("Vault not found!");
 		}else
-			if(_plugin.getConfig().getBoolean("VoteSQL.currency.Enabled") == true)
+			if(plugin.getConfig().getBoolean("VoteSQL.currency.Enabled") == true)
 			{
 				VoteSQLChat.sendCurrencyReveivedMessage(player, username, money);
-				Functions.addMoney(player, _plugin.getConfig().getInt("VoteSQL.currency.Amount"));
+				Functions.addMoney(player, plugin.getConfig().getInt("VoteSQL.currency.Amount"));
+				VoteSQLChat.logInfo("Calling Currency");
 			}
 
 		// Add to SQL
-		if (_plugin.getConfig().getBoolean("VoteSQL.MySQL.Enabled") == true)
+		if (plugin.getConfig().getBoolean("VoteSQL.MySQL.Enabled") == true)
 		{
-			if(username == "" || username == null) {
-				VoteSQLChat.logInfo("Empty vote string");
-			}else{
+			if(username != "" || username != null) {
 				Functions.addData(username);
+				VoteSQLChat.logInfo("Calling MySQL");
 			}
 		}
 
 		// Custom Commands
 		List<String> commands = new ArrayList<String>();
-		if(_plugin.getConfig().getBoolean("VoteSQL.onVote.commandsEnabled") == true) 
+		if(plugin.getConfig().getBoolean("VoteSQL.onVote.commandsEnabled") == true)
 		{
-			commands = _plugin.getConfig().getStringList("VoteSQL.onVote.Commands");
+			commands = plugin.getConfig().getStringList("VoteSQL.onVote.Commands");
 			for (String command : commands) {
 				if(command.contains("%p")) {
 					command = command.replace("%p", player.getName());
 				}
 				command = Functions.formatMessage(command, vote);
 				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+				VoteSQLChat.logInfo("Calling Commands");
 			}
 
 			// Add to FlatFile
-			if (_plugin.getConfig().getBoolean("VoteSQL.FlatFile.Enabled") == true)
-			{
-				Integer numberOfVotes = VoteSQLAPI.voteMap.get(username
-						.toLowerCase());
-				if(username == "" || username == null) {
-
-				}else{
+			if (plugin.getConfig().getBoolean("VoteSQL.FlatFile.Enabled") == true)
+			{     
+				if(username != "" || username != null) {
+					VoteSQLAPI.voteMap.put(username.toLowerCase(), 0);
+					Integer numberOfVotes = VoteSQLAPI.voteMap.get(username.toLowerCase());
+					
 					numberOfVotes++;
+					
 					VoteSQLAPI.voteMap.put(username.toLowerCase(), numberOfVotes);
-					VoteSQLAPI.saveDataFile();
+					try {
+						VoteSQLAPI.saveDataFile();
+						player.sendMessage("Saved.");
+					} catch (IOException e) {
+						e.printStackTrace();
+					} catch (InvalidConfigurationException e) {
+						e.printStackTrace();
+					}
+					VoteSQLChat.logInfo("Calling Flatfile");
 				}
 			}
 		}

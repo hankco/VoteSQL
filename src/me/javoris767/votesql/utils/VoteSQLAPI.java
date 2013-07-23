@@ -10,36 +10,41 @@ import java.util.HashMap;
 
 import me.javoris767.votesql.VoteSQL;
 import me.javoris767.votesql.commands.VoteSQLCommand;
+import me.javoris767.votesql.listeners.PlayerListener;
 import me.javoris767.votesql.listeners.VotingListener;
+import me.javoris767.votesql.listeners.ZAMListener;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class VoteSQLAPI
 {
-	private VoteSQL _plugin;
+	private static VoteSQL plugin;
 	public static Economy econ = null;
 
 	private static VoteSQLConfigs cm;
+	private VoteSQLUpdate votesqlUpdate;
 	public static HashMap<String, Integer> voteMap = new HashMap<String, Integer>();
 
-	public VoteSQLAPI(VoteSQL plugin)
+	public VoteSQLAPI(VoteSQL voteSQL)
 	{
-		_plugin = plugin;
-		VoteSQL.v = _plugin.getDescription().getVersion();
-		
+		plugin = voteSQL;
+		VoteSQL.v = plugin.getDescription().getVersion();
+		this.votesqlUpdate = new VoteSQLUpdate(plugin, "http://dev.bukkit.org/server-mods/votesql/files.rss");
+
 		registerUtils();
-		findVotifier();
-		findVault();
+		updateCheck();
+		findPlugins();
 		registerListeners();
 		registerCommands();
-		setUpSQL();
-		attemptMetrics();
 		loadConfig();
-		if (_plugin.getConfig().getBoolean("VoteSQL.FlatFile.Enabled") == true)
+		setUpSQL();
+		//attemptMetrics();
+		if (plugin.getConfig().getBoolean("VoteSQL.FlatFile.Enabled") == true)
 		{
 			voteMap = new HashMap<String, Integer>();
 			loadDataFile();
@@ -63,31 +68,35 @@ public class VoteSQLAPI
 		String path12 = "VoteSQL.currency.Enabled";
 		String path13 = "VoteSQL.currency.Amount";
 		String path14 = "VoteSQL.currency.Message";
+		
+		String path15 = "VoteSQL.ZavAutoMessager.Enable";
 
-		_plugin.getConfig().addDefault(path1, false);
-		_plugin.getConfig().addDefault(path2, false);
-		_plugin.getConfig().addDefault(path3, "Server Address eg.Localhost");
-		_plugin.getConfig().addDefault(path4, "Place Database name here");
-		_plugin.getConfig().addDefault(path5, "Place User of MySQL Database here");
-		_plugin.getConfig().addDefault(path6, "Place User password here");
-		_plugin.getConfig().addDefault(path7, "votesql");
+		plugin.getConfig().addDefault(path1, false);
+		plugin.getConfig().addDefault(path2, false);
+		plugin.getConfig().addDefault(path3, "Server Address eg.Localhost");
+		plugin.getConfig().addDefault(path4, "Place Database name here");
+		plugin.getConfig().addDefault(path5, "Place User of MySQL Database here");
+		plugin.getConfig().addDefault(path6, "Place User password here");
+		plugin.getConfig().addDefault(path7, "votesql");
 
 
-		_plugin.getConfig().addDefault(path8, true);
-		_plugin.getConfig().addDefault(path9, "&2Thank you for voting %P from %S!");
-		_plugin.getConfig().addDefault(path10, false);
+		plugin.getConfig().addDefault(path8, true);
+		plugin.getConfig().addDefault(path9, "&2Thank you for voting %P from %S!");
+		plugin.getConfig().addDefault(path10, false);
 
-		_plugin.getConfig().addDefault(path12, false);
-		_plugin.getConfig().addDefault(path13, 150);
-		_plugin.getConfig().addDefault(path14, "&2%P, You received %M dollars!");
+		plugin.getConfig().addDefault(path12, false);
+		plugin.getConfig().addDefault(path13, 150);
+		plugin.getConfig().addDefault(path14, "&2%P, You received %M dollars!");
+		
+		plugin.getConfig().addDefault(path15, false);
 
-		_plugin.getConfig().options().copyDefaults(true);
-		_plugin.saveConfig();
+		plugin.getConfig().options().copyDefaults(true);
+		plugin.saveConfig();
 	}
 
 	private void setUpSQL()
 	{
-		if (_plugin.getConfig().getBoolean("VoteSQL.MySQL.Enabled") == true) {
+		if (plugin.getConfig().getBoolean("VoteSQL.MySQL.Enabled") == true) {
 			VoteSQLChat.logInfo("Connecting to SQL database!");
 			{
 				Connection connection = null;
@@ -96,14 +105,14 @@ public class VoteSQLAPI
 				try
 				{
 					connection = DriverManager.getConnection("jdbc:MySQL://"
-							+ _plugin.getConfig().getString("VoteSQL.MySQL.Server")
+							+ plugin.getConfig().getString("VoteSQL.MySQL.Server")
 							+ "/"
-							+ _plugin.getConfig().getString("VoteSQL.MySQL.Database"),
-							_plugin.getConfig().getString("VoteSQL.MySQL.User"),
-							_plugin.getConfig().getString("VoteSQL.MySQL.Password"));
+							+ plugin.getConfig().getString("VoteSQL.MySQL.Database"),
+							plugin.getConfig().getString("VoteSQL.MySQL.User"),
+							plugin.getConfig().getString("VoteSQL.MySQL.Password"));
 					st = connection.createStatement();
 					rs = st.executeUpdate("CREATE TABLE IF NOT EXISTS `"
-							+ _plugin.getConfig().getString("VoteSQL.MySQL.Table_Prefix")
+							+ plugin.getConfig().getString("VoteSQL.MySQL.Table_Prefix")
 							+ "`( `id` MEDIUMINT NOT NULL AUTO_INCREMENT, `playername` text, `votes` MEDIUMINT(255), PRIMARY KEY (`id`))");
 					VoteSQLChat.logInfo("SQL database connected!");
 				}
@@ -117,19 +126,24 @@ public class VoteSQLAPI
 		}
 	}
 
-	public static void saveDataFile()
+	public static void saveDataFile() throws IOException, InvalidConfigurationException
 	{
-		YamlConfiguration config = cm.getConfig(VoteSQLConfFile.PLAYERDATA);
-		File df = new File("plugins" + File.separator + "VoteSQL"
-				+ File.separator + "playerdata.yml");
-		try
-		{
-			config.save(df);
-		}
-		catch (IOException ex)
-		{
-			VoteSQLChat.logInfo("Could not save the data!");
-		}
+	    final CommentedYamlConfiguration config;
+        File dataFile = new File(plugin.getDataFolder(), "playerdata.yml");
+        if (!dataFile.exists()) {
+            VoteSQLChat.logInfo("Created playerdata.yml");
+            dataFile.createNewFile();
+        }
+
+        // Load the configuration file into memory
+        config = new CommentedYamlConfiguration();
+        config.load(dataFile);
+
+        config.options().header("VoteSQL PlayerData FlatFile");
+
+        // Saves the configuration from memory to file
+        config.save(dataFile);
+        
 		for (String name : voteMap.keySet())
 		{
 			if (name != null || voteMap != null)
@@ -138,10 +152,7 @@ public class VoteSQLAPI
 						voteMap.get(name.toLowerCase()).intValue());
 				return;
 			}
-			VoteSQLChat.logInfo("Could not save the data!");
-			return;
 		}
-		return;
 	}
 
 	public static void loadDataFile()
@@ -170,9 +181,9 @@ public class VoteSQLAPI
 		}
 		return;
 	}
-
-	private void findVotifier()
+	private boolean findPlugins()
 	{
+		// Votifier
 		if (Bukkit.getPluginManager().getPlugin("Votifier") != null)
 		{
 			VoteSQLChat.logInfo(" Votifier has been found!");
@@ -181,15 +192,24 @@ public class VoteSQLAPI
 		{
 			VoteSQLChat.logInfo(" Votifier can not be found!");
 			VoteSQLChat.logInfo(" Disabling the plugin!");
-			Bukkit.getPluginManager().disablePlugin(_plugin);
+			Bukkit.getPluginManager().disablePlugin(plugin);
 		}
-	}
-	private boolean findVault()
-	{
+		
+		// ZavAutoMessager
+		if (Bukkit.getPluginManager().getPlugin("ZavAutoMessager") != null)
+		{
+			VoteSQLChat.logInfo(" ZavAutoMessager has been found!");
+		}
+		else
+		{
+			VoteSQLChat.logInfo(" ZavAutoMessager can not be found!");
+		}
+		
+		// Vault
 		if (Bukkit.getPluginManager().getPlugin("Vault") != null)
 		{
 			VoteSQLChat.logInfo(" Vault has been found!");
-			RegisteredServiceProvider<Economy> rsp = _plugin.getServer().getServicesManager().getRegistration(Economy.class);
+			RegisteredServiceProvider<Economy> rsp = plugin.getServer().getServicesManager().getRegistration(Economy.class);
 			if (rsp == null) {
 				return false;
 			}
@@ -202,26 +222,26 @@ public class VoteSQLAPI
 		}
 		return false;
 	}
-
 	private void registerCommands()
 	{
 
-		VoteSQLCommand vC = new VoteSQLCommand(_plugin);
-		_plugin.getCommand("votesql").setExecutor(vC);
+		VoteSQLCommand vC = new VoteSQLCommand(plugin);
+		plugin.getCommand("votesql").setExecutor(vC);
 	}
 
 	private void registerUtils()
 	{
-		new Permissions(_plugin);
-		new Functions(_plugin);
-		new VoteSQLChat(_plugin);
-		cm = new VoteSQLConfigs(_plugin);
+		new Permissions(plugin);
+		new Functions(plugin);
+		new VoteSQLChat(plugin);
+		cm = new VoteSQLConfigs(plugin);
 	}
 
 	private void registerListeners()
 	{
-		new VotingListener(_plugin);
-		//new JoinListener(_plugin);
+		new VotingListener(plugin);
+		new PlayerListener(plugin);
+		new ZAMListener(plugin);
 	}
 
 	public static VoteSQLConfigs getConfigs()
@@ -230,13 +250,22 @@ public class VoteSQLAPI
 		return cm;
 
 	}
+	public void updateCheck() {
+		if (this.votesqlUpdate.updateNeeded()) {
+			VoteSQLChat.logInfo(" Version: " + this.votesqlUpdate.getVersion() + " is now available!");
+		}else{
+			VoteSQLChat.logInfo(" is up to date!");
+		}
+	}
+}
 
-	private void attemptMetrics()
+
+/*private void attemptMetrics()
 	{
 		try
 		{
 			MetricsLite metrics;
-			metrics = new MetricsLite(_plugin);
+			metrics = new MetricsLite(plugin);
 			metrics.start();
 		}
 		catch (IOException e1)
@@ -245,4 +274,4 @@ public class VoteSQLAPI
 		}
 		return;
 	}
-}
+}*/

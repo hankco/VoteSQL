@@ -24,6 +24,7 @@ public class CommentedYamlConfiguration extends YamlConfiguration
 		super();
 		comments = new HashMap<String, String>();
 	}
+	
 
 	@Override
 	public void save(String file) throws IOException
