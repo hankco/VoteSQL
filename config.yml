@@ -1,0 +1,23 @@
+# Thanks for choosing VoteSQL! Simply change the info below. The FlatFileListener on the first vote may not record it!
+# %P = Player Name | %M = Money received | %S = The Site they voted from!
+VoteSQL:
+  FlatFile:
+    Enabled: false
+  MySQL:
+    Enabled: false
+    Server: Server Address eg.Localhost
+    Database: Place Database name here
+    User: Place User of MySQL Database here
+    Password: Place User password here
+    Table_Prefix: votesql
+  onVote:
+    messageEnabled: true
+    Message: '&2Thank you for voting %P from %S!'
+    commandsEnabled: false
+    Commands:
+    - give %P diamond 2
+    - slap %P
+  currency:
+    Enabled: false
+    Amount: 150
+    Message: '&2%P, You received %M dollars!'
