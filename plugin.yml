@@ -1,6 +1,6 @@
 name: VoteSQL
 main: me.javoris767.votesql.VoteSQL
-version: 1.4
+version: 1.5
 author: javoris767
 authors: [javoris767, MCForger]
 description: Votifier SQL/Listener/FlatFile Logger!

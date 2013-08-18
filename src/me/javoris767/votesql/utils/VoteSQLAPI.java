@@ -3,7 +3,6 @@ package me.javoris767.votesql.utils;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -21,6 +20,8 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
+import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
+
 public class VoteSQLAPI
 {
 	private static VoteSQL plugin;
@@ -28,9 +29,10 @@ public class VoteSQLAPI
 
 	private static VoteSQLConfigs cm;
 	private VoteSQLUpdate votesqlUpdate;
+	private MiniConnectionPoolManager pool;
 	public static HashMap<String, Integer> voteMap = new HashMap<String, Integer>();
 
-	public VoteSQLAPI(VoteSQL voteSQL)
+	public VoteSQLAPI(VoteSQL voteSQL) throws ClassNotFoundException, SQLException	
 	{
 		plugin = voteSQL;
 		VoteSQL.v = plugin.getDescription().getVersion();
@@ -42,7 +44,10 @@ public class VoteSQLAPI
 		registerListeners();
 		registerCommands();
 		loadConfig();
+		connect();
 		setUpSQL();
+		//poolConnection();
+
 		//attemptMetrics();
 		if (plugin.getConfig().getBoolean("VoteSQL.FlatFile.Enabled") == true)
 		{
@@ -63,12 +68,11 @@ public class VoteSQLAPI
 		String path8 = "VoteSQL.onVote.messageEnabled";
 		String path9 = "VoteSQL.onVote.Message";
 		String path10 = "VoteSQL.onVote.commandsEnabled";
-		//String path11 = "VoteSQL.onVoteCommands";
 
 		String path12 = "VoteSQL.currency.Enabled";
 		String path13 = "VoteSQL.currency.Amount";
 		String path14 = "VoteSQL.currency.Message";
-		
+
 		String path15 = "VoteSQL.ZavAutoMessager.Enable";
 
 		plugin.getConfig().addDefault(path1, false);
@@ -87,11 +91,25 @@ public class VoteSQLAPI
 		plugin.getConfig().addDefault(path12, false);
 		plugin.getConfig().addDefault(path13, 150);
 		plugin.getConfig().addDefault(path14, "&2%P, You received %M dollars!");
-		
+
 		plugin.getConfig().addDefault(path15, false);
 
 		plugin.getConfig().options().copyDefaults(true);
 		plugin.saveConfig();
+	}
+	public synchronized void connect() throws ClassNotFoundException, SQLException {
+		if (plugin.getConfig().getBoolean("VoteSQL.MySQL.Enabled") == true) {
+			Class.forName("com.mysql.jdbc.Driver");
+			VoteSQLChat.logInfo("MySQL driver loaded");
+			MysqlConnectionPoolDataSource dataSource = new MysqlConnectionPoolDataSource();
+			dataSource.setDatabaseName(plugin.getConfig().getString("VoteSQL.MySQL.Database"));
+			dataSource.setServerName(plugin.getConfig().getString("VoteSQL.MySQL.Server"));
+			dataSource.setPort(3306);
+			dataSource.setUser(plugin.getConfig().getString("VoteSQL.MySQL.User"));
+			dataSource.setPassword(plugin.getConfig().getString("VoteSQL.MySQL.Password"));
+			pool = new MiniConnectionPoolManager(dataSource, 1);
+			VoteSQLChat.logInfo("Connection pool ready");
+		}
 	}
 
 	private void setUpSQL()
@@ -104,13 +122,9 @@ public class VoteSQLAPI
 				int rs = 0;
 				try
 				{
-					connection = DriverManager.getConnection("jdbc:MySQL://"
-							+ plugin.getConfig().getString("VoteSQL.MySQL.Server")
-							+ "/"
-							+ plugin.getConfig().getString("VoteSQL.MySQL.Database"),
-							plugin.getConfig().getString("VoteSQL.MySQL.User"),
-							plugin.getConfig().getString("VoteSQL.MySQL.Password"));
-					st = connection.createStatement();
+					connection = pool.getValidConnection();
+                    /*connection = 
+							DriverManager.getConnection("jdbc:MySQL://" + plugin.getConfig().getString("VoteSQL.MySQL.Server") + "/" + plugin.getConfig().getString("VoteSQL.MySQL.Database"), plugin.getConfig().getString("VoteSQL.MySQL.User"), plugin.getConfig().getString("VoteSQL.MySQL.Password"));*/					st = connection.createStatement(); 
 					rs = st.executeUpdate("CREATE TABLE IF NOT EXISTS `"
 							+ plugin.getConfig().getString("VoteSQL.MySQL.Table_Prefix")
 							+ "`( `id` MEDIUMINT NOT NULL AUTO_INCREMENT, `playername` text, `votes` MEDIUMINT(255), PRIMARY KEY (`id`))");
@@ -128,22 +142,22 @@ public class VoteSQLAPI
 
 	public static void saveDataFile() throws IOException, InvalidConfigurationException
 	{
-	    final CommentedYamlConfiguration config;
-        File dataFile = new File(plugin.getDataFolder(), "playerdata.yml");
-        if (!dataFile.exists()) {
-            VoteSQLChat.logInfo("Created playerdata.yml");
-            dataFile.createNewFile();
-        }
+		final CommentedYamlConfiguration config;
+		File dataFile = new File(plugin.getDataFolder(), "playerdata.yml");
+		if (!dataFile.exists()) {
+			VoteSQLChat.logInfo("Created playerdata.yml");
+			dataFile.createNewFile();
+		}
 
-        // Load the configuration file into memory
-        config = new CommentedYamlConfiguration();
-        config.load(dataFile);
+		// Load the configuration file into memory
+		config = new CommentedYamlConfiguration();
+		config.load(dataFile);
 
-        config.options().header("VoteSQL PlayerData FlatFile");
+		config.options().header("VoteSQL PlayerData FlatFile");
 
-        // Saves the configuration from memory to file
-        config.save(dataFile);
-        
+		// Saves the configuration from memory to file
+		config.save(dataFile);
+
 		for (String name : voteMap.keySet())
 		{
 			if (name != null || voteMap != null)
@@ -194,7 +208,7 @@ public class VoteSQLAPI
 			VoteSQLChat.logInfo(" Disabling the plugin!");
 			Bukkit.getPluginManager().disablePlugin(plugin);
 		}
-		
+
 		// ZavAutoMessager
 		if (Bukkit.getPluginManager().getPlugin("ZavAutoMessager") != null)
 		{
@@ -204,7 +218,7 @@ public class VoteSQLAPI
 		{
 			VoteSQLChat.logInfo(" ZavAutoMessager can not be found!");
 		}
-		
+
 		// Vault
 		if (Bukkit.getPluginManager().getPlugin("Vault") != null)
 		{
@@ -257,21 +271,33 @@ public class VoteSQLAPI
 			VoteSQLChat.logInfo(" is up to date!");
 		}
 	}
+	/*	public void poolConnection() {
+		if (plugin.getConfig().getBoolean("VoteSQL.MySQL.Enabled") == true) {
+			String url = 
+					"jdbc:mysql://" + plugin.getConfig().getString("VoteSQL.MySQL.Server") + ":3306/" + plugin.getConfig().getString("VoteSQL.MySQL.DataBase") + "?useUnicode=true&characterEncoding=utf-8"; 
+			String user =
+					plugin.getConfig().getString("VoteSQL.MySQL.User");
+			String password =
+					plugin.getConfig().getString("VoteSQL.MySQL.Password");
+			try {
+				VoteSQLChat.logInfo("Connecting to " + user + "@" + url+ "...");
+				pool2 = new ConnectionPool(url, user, password);
+				Connection conn = getConnection();
+				if(conn == null) {
+					return;
+				}
+				conn.close();
+			} catch (final NullPointerException ex) {
+				VoteSQLChat.logSevere("Error while loading: " + ex);
+			} catch (final Exception ex) {
+				VoteSQLChat.logSevere("Error while loading: " + ex.getMessage());
+				return;
+			}
+		}
+	}*/
+
+	/*	private Connection getConnection() {
+		Connection conn = null;
+		return conn;
+	}*/
 }
-
-
-/*private void attemptMetrics()
-	{
-		try
-		{
-			MetricsLite metrics;
-			metrics = new MetricsLite(plugin);
-			metrics.start();
-		}
-		catch (IOException e1)
-		{
-			e1.printStackTrace();
-		}
-		return;
-	}
-}*/

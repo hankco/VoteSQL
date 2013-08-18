@@ -1,24 +1,26 @@
 package me.javoris767.votesql.utils;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+
+
 import me.javoris767.votesql.VoteSQL;
 
 import org.bukkit.entity.Player;
 
+import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 import com.vexsoftware.votifier.model.Vote;
 
-public class Functions
+public class Functions implements DataSource
 {
+	//private static ConnectionPool pool;
 	private Connection connection = null;
-
 	private static VoteSQL plugin;
-
+	private static MiniConnectionPoolManager pool;
 	public Functions(VoteSQL voteSQL)
 	{
 		plugin = voteSQL;
@@ -43,22 +45,34 @@ public class Functions
 	{
 		VoteSQLAPI.econ.depositPlayer(player.getName(), money);
 	}
-	public static void addData(String playername)
+	public static void addData(String playername) throws ClassNotFoundException
 	{
 		PreparedStatement pst = null;
 		Connection con = null;
 		Statement stmt = null;
-		int num = 1;
 		ResultSet rs = null;
+		int num = 1;
 		try
 		{
-			con = DriverManager.getConnection(
+			Class.forName("com.mysql.jdbc.Driver");
+			VoteSQLChat.logInfo("MySQL driver loaded");
+			MysqlConnectionPoolDataSource dataSource = new MysqlConnectionPoolDataSource();
+			dataSource.setDatabaseName(plugin.getConfig().getString("VoteSQL.MySQL.Database"));
+			dataSource.setServerName(plugin.getConfig().getString("VoteSQL.MySQL.Server"));
+			dataSource.setPort(3306);
+			dataSource.setUser(plugin.getConfig().getString("VoteSQL.MySQL.User"));
+			dataSource.setPassword(plugin.getConfig().getString("VoteSQL.MySQL.Password"));
+			
+			pool = new MiniConnectionPoolManager(dataSource, 10);
+			
+			con = pool.getValidConnection();
+			/*con = DriverManager.getConnection(
 					"jdbc:MySQL://"
 							+ plugin.getConfig().getString("VoteSQL.MySQL.Server")
 							+ "/"
 							+ plugin.getConfig().getString("VoteSQL.MySQL.Database"),
 							plugin.getConfig().getString("VoteSQL.MySQL.User"),
-							plugin.getConfig().getString("VoteSQL.MySQL.Password"));
+							plugin.getConfig().getString("VoteSQL.MySQL.Password"));*/
 
 			String database = plugin.getConfig().getString("VoteSQL.MySQL.Table_Prefix");
 			stmt = con.createStatement();
@@ -90,6 +104,50 @@ public class Functions
 		catch (SQLException ex)
 		{
 			System.out.print(ex);
+		} finally {
+			close(rs);
+			close(stmt);
+			close(con);
 		}
 	}
+    public synchronized void close() {
+        try {
+            pool.dispose();
+        } catch (SQLException ex) {
+        	VoteSQLChat.logSevere(ex.getMessage());
+        }
+    }
+
+    public void reload() {
+    }
+
+    private static void close(Statement st) {
+        if (st != null) {
+            try {
+                st.close();
+            } catch (SQLException ex) {
+            	VoteSQLChat.logSevere(ex.getMessage());
+            }
+        }
+    }
+
+    private static void close(ResultSet rs) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (SQLException ex) {
+            	VoteSQLChat.logSevere(ex.getMessage());
+            }
+        }
+    }
+
+    private static void close(Connection con) {
+        if (con != null) {
+            try {
+                con.close();
+            } catch (SQLException ex) {
+                VoteSQLChat.logSevere(ex.getMessage());
+            }
+        }
+    }
 }

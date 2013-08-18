@@ -27,8 +27,8 @@ public class VotingListener implements Listener
 		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
 	}
 
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled=true)
-	public void onVote(VotifierEvent event)
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void onVote(VotifierEvent event) throws ClassNotFoundException
 	{
 		Vote vote = event.getVote();
 		String siteVotedOn = vote.getServiceName();
@@ -41,7 +41,7 @@ public class VotingListener implements Listener
 		{
 			VoteSQLChat.broadcastVoteMessage(username, siteVotedOn);
 			VoteSQLChat.logInfo("Calling broadcast");
-			}
+		}
 
 		// Currency
 		if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
@@ -49,7 +49,9 @@ public class VotingListener implements Listener
 		}else
 			if(plugin.getConfig().getBoolean("VoteSQL.currency.Enabled") == true)
 			{
-				VoteSQLChat.sendCurrencyReveivedMessage(player, username, money);
+				if(player.isOnline()) {
+					VoteSQLChat.sendCurrencyReveivedMessage(player, username, money);
+				}
 				Functions.addMoney(player, plugin.getConfig().getInt("VoteSQL.currency.Amount"));
 				VoteSQLChat.logInfo("Calling Currency");
 			}
@@ -83,13 +85,12 @@ public class VotingListener implements Listener
 				if(username != "" || username != null) {
 					VoteSQLAPI.voteMap.put(username.toLowerCase(), 0);
 					Integer numberOfVotes = VoteSQLAPI.voteMap.get(username.toLowerCase());
-					
+
 					numberOfVotes++;
-					
+
 					VoteSQLAPI.voteMap.put(username.toLowerCase(), numberOfVotes);
 					try {
 						VoteSQLAPI.saveDataFile();
-						player.sendMessage("Saved.");
 					} catch (IOException e) {
 						e.printStackTrace();
 					} catch (InvalidConfigurationException e) {

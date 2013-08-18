@@ -1,6 +1,7 @@
 package me.javoris767.votesql;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import me.javoris767.votesql.utils.*;
 
@@ -30,7 +31,13 @@ public class VoteSQL extends JavaPlugin
 	@Override
 	public void onEnable()
 	{
-		new VoteSQLAPI(this);
+		try {
+			new VoteSQLAPI(this);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		VoteSQLChat.enableMessage();
 	}
 }

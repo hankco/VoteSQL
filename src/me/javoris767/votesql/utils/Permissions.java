@@ -16,4 +16,5 @@ public class Permissions
 	public static final String MAINCOMMAND_RELOAD = "votesql.reload";
 	public static final String MAINCOMMAND_TOP = "votesql.top";
 	public static final String MAINCOMMAND_RANK = "votesql.rank";
+	public static final String MAINCOMMAND_VOTES = "votesql.votes";
 }
